@@ -111,21 +111,23 @@ class Map:
                 name = map_data['name']
                 author = map_data['author']
                 start_dict = map_data['start']
-                webhook_and_log(f"开始\033[0;34;40m{name}\033[0m锄地")
-                log.info(f"该路线导航作者：\033[0;31;40m{author}\033[0m")
+                webhook_and_log(f"开始\033[0;32;47m{name}\033[0m锄地")
+                log.info(f"该路线导航作者：\033[0;32;47m{author}\033[0m")
                 log.info("感谢每一位无私奉献的作者")
                 for start in start_dict:
                     key = list(start.keys())[0]
                     log.debug(key)
                     value = start[key]
                     if key == 'map':
-                        time.sleep(1) # 防止卡顿
+                        time.sleep(5) # 防止卡顿
+                        log.info("open map")
                         self.calculated.open_map(self.open_map)
                         self.map_init()
                     else:
                         time.sleep(value)
-                        self.calculated.click_target(key, 0.98)
+                        self.calculated.click_target(key, 0.95)
                 time.sleep(3)
+                log.info("wait_join")
                 count = self.calculated.wait_join()
                 log.info(f'地图加载完毕，加载时间为 {count} 秒')
                 time.sleep(2) # 加2s防止人物未加载

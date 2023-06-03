@@ -181,6 +181,7 @@ class calculated:
         """
         for i in range(frequency):
             start_time = time.time()
+            log.info("开始识别并点击文字坐标")
             while True:
                 img_fp, left, top, right, bottom, width, length = self.take_screenshot()
                 text, pos = self.ocr_pos(img_fp, characters)
@@ -306,6 +307,7 @@ class calculated:
             elif "map" in temp_name:
                 log.info("选择地图")
             if "map" not in temp_name:
+                log.info('"map" not in temp_name')
                 self.ocr_click(temp_ocr[temp_name])
                 while True:
                     if not self.is_blackscreen():
@@ -313,9 +315,11 @@ class calculated:
             elif "point" in temp_name:
                 if self.platform == "模拟器":
                     # time.sleep(0.5)
-                    self.adb.input_swipe(temp_ocr[temp_name][0],temp_ocr[temp_name][1],200)
+                    log.info("adb swipe to position:"+str(temp_ocr[temp_name][0])+","+str(temp_ocr[temp_name][1]))
+                    self.adb.input_swipe(temp_ocr[temp_name][0],temp_ocr[temp_name][1],1000)
+                    time.sleep(1)
                     temp_ocr.pop(temp_name)
-                    time.sleep(0.5)
+                    time.sleep(1)
                 else:
                     target = cv.imread(target_path)
                     while True:
@@ -328,6 +332,7 @@ class calculated:
                             break
             else:
                 if type(temp_ocr[temp_name]) == str:
+                    log.info("temp_name"+temp_ocr[temp_name])
                     start_time = time.time()
                     while True:
                         ocr_data = self.part_ocr((77,10,85,97)) if self.platform == "PC" else self.part_ocr((72,18,80,97))
@@ -340,11 +345,14 @@ class calculated:
                             join = True
                             break
                 elif type(temp_ocr[temp_name]) == tuple:
+                    log.info("temp_name type is tuple")
                     self.img_click(temp_ocr[temp_name])
         if temp_name not in temp_ocr or join:
             target = cv.imread(target_path)
+            log.info("temp_name not in temp_ocr" + str(temp_name))
             while True:
                 result = self.scan_screenshot(target)
+                log.info(str(target_path)+","+str(result["max_val"]))
                 if result["max_val"] > threshold:
                     #points = self.calculated(result, target.shape)
                     self.Click(result["max_loc"])
@@ -396,6 +404,7 @@ class calculated:
         if read_json_file(CONFIG_FILE_NAME)["auto_battle_persistence"] != 1:
             while True:
                 result = self.scan_screenshot(target)
+                log.info("自动战斗图标匹配result：" + str(result["max_val"]))
                 if result["max_val"] > 0.9:
                     #points = self.calculated(result, target.shape)
                     points = result["max_loc"]
@@ -413,6 +422,8 @@ class calculated:
         while True:
             if type == 0:
                 result = self.scan_screenshot(target)
+                log.info("自动战斗停止图标匹配result：" + str(result["max_val"]))
+                log.info("战斗时间：" + str(time.time() - start_time))
                 if result["max_val"] > 0.95 and self.platform == 'PC':
                     #points = self.calculated(result, target.shape)
                     points = result["max_loc"]
@@ -420,11 +431,14 @@ class calculated:
                     log.info("完成自动战斗")
                     time.sleep(3)
                     break
-                elif result["max_val"] > 0.92 and self.platform == '模拟器':
+                elif result["max_val"] > 0.91 and self.platform == '模拟器':
                     points = result["max_loc"]
                     log.debug(points)
                     log.info("完成自动战斗")
                     time.sleep(3)
+                    break
+                elif time.time() - start_time > 600:
+                    log.info("大于10分钟未识别出自动战斗完成")
                     break
             elif type == 1:
                 result = self.part_ocr((6,10,89,88))
@@ -668,6 +682,7 @@ class calculated:
         start_time = time.time()
         while True:
             result = self.get_pix_bgr((119, 86))
+            log.info(str(result))
             endtime = time.time() - start_time
             if result != [18, 18, 18]:
                 log.info("已进入地图")
@@ -706,8 +721,10 @@ class calculated:
                 time.sleep(0.3) # 防止未打开地图
                 self.img_click((132, 82))
             map_status = self.part_ocr((3,2,10,6)) if self.platform == "PC" else self.part_ocr((6,2,10,6))
+            log.info(str(map_status))
             if self.check_list(".*导.*航.*", map_status):
                 log.info("进入地图")
+                log.info(str(map_status))
                 break
             if time.time() - start_time > 10:
                 log.info("识别超时")

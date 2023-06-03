@@ -70,6 +70,7 @@ def main(type=0,platform="PC",start=None,role_list=None):
     map_instance = map_word(platform, order, adb_path)
     simulated_universe =Simulated_Universe(platform, order, adb_path)
     start, role_list = choose_map(map_instance, type, platform)
+    log.level('DEBUG')
     if start:
         if platform == "PC":
             log.info("脚本将自动切换至游戏窗口，请保持游戏窗口激活")
